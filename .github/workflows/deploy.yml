@@ -1,0 +1,64 @@
+name: Publish site
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  ASTRO_TELEMETRY_DISABLED: 1
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: cv/requirements.txt
+      - run: pip install -r cv/requirements.txt
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+
+      - name: Check the repo for private data
+        run: python scripts/check_private.py --all
+
+      - name: Build CVs and site
+        run: npm run build
+
+      - name: Check the built site for private data
+        run: python scripts/check_private.py dist
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    # Publishing is off until the repository variable PUBLISH is "true":
+    #   gh variable set PUBLISH --body true
+    # (or Settings → Secrets and variables → Actions → Variables). Builds and checks always run.
+    if: vars.PUBLISH == 'true'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

@@ -1,0 +1,4 @@
+markdown>=3.5
+pyyaml>=6
+pypdf>=4
+Pillow>=10   # privacy check: finds GPS location in photos

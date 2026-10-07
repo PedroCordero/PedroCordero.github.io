@@ -1,0 +1,33 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import cv from '../data/cv.json';
+
+const home = await getEntry('pages', 'home');
+const intro = home ? await render(home) : null;
+const projects = (await getCollection('projects', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+const featured = projects.filter((p) => p.data.featured);
+const shown = (featured.length > 0 ? featured : projects).slice(0, 6);
+const role = cv.roles.find((r) => r.website) ?? cv.roles[0];
+---
+
+<Base>
+  <section class="hero">
+    <h1>{cv.person.name}</h1>
+    {role && <p class="lead">{role.headline}</p>}
+    {intro && <div class="prose"><intro.Content /></div>}
+    <p class="actions">
+      <a class="button primary" href="/projects/">See projects</a>
+      <a class="button" href="/cv/">Read CV</a>
+    </p>
+  </section>
+
+  {shown.length > 0 && (
+    <section>
+      <h2>{featured.length > 0 ? 'Featured projects' : 'Latest projects'}</h2>
+      <div class="grid">{shown.map((project) => <ProjectCard project={project} />)}</div>
+    </section>
+  )}
+</Base>

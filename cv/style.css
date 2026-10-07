@@ -1,0 +1,36 @@
+/* Single-column, text-only layout: prints cleanly and is read correctly by ATS parsers. */
+@page { size: A4; margin: 13mm 15mm; }
+
+:root { --ink: #1d1d1f; --muted: #555b66; --accent: #1f3a5f; --rule: #c9ced6; }
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; color: var(--ink); background: #fff;
+  font: 9.8pt/1.38 "Segoe UI", Calibri, Arial, sans-serif;
+}
+a { color: var(--accent); text-decoration: none; }
+
+header { position: relative; text-align: center; margin-bottom: 8pt; min-height: 64pt; }
+h1 { margin: 0; font-size: 20pt; letter-spacing: .5pt; color: var(--accent); font-weight: 600; }
+.headline { font-size: 11pt; font-weight: 600; margin: 1pt 0 3pt; }
+.contact { color: var(--muted); font-size: 9pt; }
+.photo {
+  position: absolute; right: 0; top: 0;
+  width: 64pt; height: 64pt; border-radius: 50%; object-fit: cover; object-position: center 20%;
+}
+
+section { margin-top: 8pt; }
+h2 {
+  margin: 0 0 4pt; padding-bottom: 1.5pt; border-bottom: 1px solid var(--rule);
+  font-size: 10.5pt; text-transform: uppercase; letter-spacing: 1pt; color: var(--accent);
+  break-after: avoid;
+}
+p { margin: 0 0 3pt; }
+ul { margin: 1pt 0 3pt; padding-left: 13pt; }
+li { margin-bottom: 1.5pt; }
+
+.entry { margin-bottom: 5pt; break-inside: avoid; }
+.entry-head { display: flex; justify-content: space-between; gap: 12pt; align-items: baseline; }
+.entry-title { font-weight: 600; }
+.entry-date { color: var(--muted); white-space: nowrap; font-size: 9pt; }
+.entry-sub { color: var(--muted); font-style: italic; margin-bottom: 1pt; }

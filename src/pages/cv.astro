@@ -1,0 +1,24 @@
+---
+// Data comes from content/cv/ via `python cv/build.py --json` (runs before dev and build).
+// The page shows the role marked `website: true` in content/cv/roles/, else the first one.
+import Base from '../layouts/Base.astro';
+import cv from '../data/cv.json';
+
+const role = cv.roles.find((r) => r.website) ?? cv.roles[0];
+---
+
+<Base title="CV" description={role.headline}>
+  <h1>Curriculum Vitae</h1>
+  <p class="lead">{role.headline}</p>
+  <p class="actions">
+    {cv.roles.map((r) => <a class="button" href={r.pdf} download>{r.headline} · PDF</a>)}
+  </p>
+  <div class="cv">
+    {role.sections.map((section) => (
+      <section>
+        <h2>{section.title}</h2>
+        <Fragment set:html={section.html} />
+      </section>
+    ))}
+  </div>
+</Base>

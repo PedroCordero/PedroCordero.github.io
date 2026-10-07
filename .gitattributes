@@ -1,0 +1,2 @@
+# Same line endings on every OS (the commit hook breaks with Windows line endings)
+* text=auto eol=lf
