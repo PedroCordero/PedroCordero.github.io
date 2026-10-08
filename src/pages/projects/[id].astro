@@ -1,6 +1,6 @@
 ---
 import { getCollection, render } from 'astro:content';
-import { Image } from 'astro:assets';
+import { Image, getImage } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 
 export async function getStaticPaths() {
@@ -9,20 +9,21 @@ export async function getStaticPaths() {
 }
 
 const { project } = Astro.props;
-const { title, summary, date, cover, tags, links } = project.data;
+const { title, summary, date, cover, video, tags, links } = project.data;
 const { Content } = await render(project);
+const poster = video && cover ? (await getImage({ src: cover, width: 1200 })).src : undefined;
 ---
 
 <Base title={title} description={summary}>
   <article class="project">
     <a class="back" href="/projects/">← All projects</a>
     <h1>{title}</h1>
-    <p class="meta">
-      <time datetime={date.toISOString()}>{date.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</time>
-    </p>
+    <p class="meta"><time datetime={date.toISOString()}>{date.getFullYear()}</time></p>
     {tags.length > 0 && <ul class="tags">{tags.map((tag) => <li>{tag}</li>)}</ul>}
     {links.length > 0 && <p class="actions">{links.map((link) => <a class="button" href={link.url}>{link.label}</a>)}</p>}
-    {cover && <Image class="cover" src={cover} alt="" width={1200} />}
+    {video
+      ? <video class="cover" src={video} poster={poster} autoplay loop muted playsinline></video>
+      : cover && <Image class="cover" src={cover} alt="" width={1200} />}
     <div class="prose"><Content /></div>
   </article>
 </Base>

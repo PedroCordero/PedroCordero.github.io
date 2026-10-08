@@ -84,7 +84,7 @@ Relevant courses: Control Systems, Embedded Systems, Digital Signal Processing, 
 - **Conference paper.** LLM-based Task Planning for Mobile Robots Using a Novel SLAM Method for Materials Distribution. *International Conference on Automation, Robotics, and Applications (ICARA)*, IEEE, 2025. [ieeexplore.ieee.org/document/10977631](https://ieeexplore.ieee.org/document/10977631)
 - **Journal article (Q1).** Design and Evaluation of a Mobile Robotic Assistant for Emotional Learning in Individuals with ASD: Expert Evaluation Stage. *International Journal of Social Robotics* 16, 1765–1781, Springer, 2024. [doi.org/10.1007/s12369-024-01145-x](https://doi.org/10.1007/s12369-024-01145-x)
 - **Conference paper.** Multi Mobile Robots Path Planning by Improved RRT\* Algorithm with Right-of-Way Rule. *International Conference on Robot Systems and Applications (ICRSA)*, ACM, 2024. [doi.org/10.1145/3702468.3702470](https://doi.org/10.1145/3702468.3702470)
-- **Book chapter (co-author).** Educación en la era de la desinformación a partir de la COVID-19. In *Covida-20: Una coalición educativa para enfrentar la pandemia*, Pearson Education, 2021.
+- **Book chapter (co-author).** Educación en la era de la desinformación a partir de la COVID-19. In *Covida-20: Una coalición educativa para enfrentar la pandemia*, Pearson Education, 2021. [researchgate.net/publication/348663637](https://www.researchgate.net/publication/348663637_COVIDA-20_Una_coalicion_educativa_para_enfrentar_la_pandemia)
 
 ## Honours and Awards
 

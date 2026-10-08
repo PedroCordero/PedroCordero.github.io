@@ -8,8 +8,9 @@
 
 title: Project title
 summary: One or two sentences. Shown on the project card and in search results.
-date: 2025-01-31            # used to sort projects, newest first
+date: 2025-01-31            # sorts projects (newest first); only the year is shown
 cover: ./cover.webp         # optional: image in this folder, shown on the card and at the top
+video: /media/my-robot/demo.mp4   # optional: shown at the top instead of the cover (file in public/media/)
 tags: [Python, ROS2]        # optional
 links:                      # optional: buttons under the title
   - label: Code

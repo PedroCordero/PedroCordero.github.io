@@ -16,6 +16,8 @@ const projects = defineCollection({
       summary: z.string(),
       date: z.coerce.date(),
       cover: image().optional(),
+      video: z.string().optional(), // e.g. /media/<project>/demo.mp4, shown at the top instead of the cover
+
       tags: z.array(z.string()).default([]),
       links: z.array(z.object({ label: z.string(), url: z.string().url() })).default([]),
       featured: z.boolean().default(false),
