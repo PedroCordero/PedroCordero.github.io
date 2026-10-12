@@ -27,11 +27,10 @@ file_name: PedroCordero_CV
 
 ## Experience
 
-### TODO Job Title @ European Knowledge Center | Budapest, Hungary | Sep 2025 – Present
+### AI/Robotics Engineer @ European Knowledge Center | Budapest, Hungary | Sep 2025 – Present
 - TODO: main achievement with a number (time saved, accuracy, robots deployed, users, ...).
 - TODO: second achievement naming the key technologies (ROS2, PyTorch, LLMs, ...).
 
-<!-- TODO: confirm end month (new job started Sep 2025, so Aug 2025 assumed) -->
 ### Information Technology Field Engineer (Freelance) @ Dacoreit | Budapest, Hungary | Mar 2025 – Aug 2025
 - Delivered on-site IT support and infrastructure setup across 10+ client locations in Hungary, troubleshooting hardware and network issues and ensuring a 100% task completion rate under SLA guidelines. {ai, engineering}
 - Provided on-site IT support across 10+ client locations in Hungary, troubleshooting hardware and network issues with a 100% task completion rate under strict SLA requirements. {it}
@@ -72,8 +71,8 @@ Relevant courses: Control Systems, Embedded Systems, Digital Signal Processing, 
 
 ## Skills
 
-- **Programming:** Python, C/C++, MATLAB, Bash, SQL, Java, JavaScript, R, Git
-- **AI / ML & Data:** PyTorch, TensorFlow, Keras, scikit-learn, OpenCV, YOLO, LLMs (Llama 3.1, Phi-3), NLP, NumPy, Pandas
+- **Programming:** Python, C/C++, MATLAB, Bash, SQL, Java, JavaScript, TypeScript, R, Git
+- **AI / ML & Data:** PyTorch, TensorFlow, Keras, scikit-learn, OpenCV, YOLO, LLMs (Llama 3.1, Phi-3), NLP, Reinforcement Learning, NumPy, Pandas, MLOps, AWS (Cloud ML)
 - **Robotics & Automation:** ROS/ROS2, Gazebo, Webots, SLAM, Path Planning (RRT*), Kinematics, Raspberry Pi, PLC, SolidWorks, Autodesk Inventor
 - **Electronics & Simulation:** Simulink, LabVIEW, Xilinx Vivado (FPGA), Altium Designer, Eagle, Proteus, Multisim, ANSYS
 - **IT & Networking:** OS Support, System Diagnostics, Hardware Repair, LAN/WAN, TCP/IP, Network Troubleshooting
@@ -105,6 +104,9 @@ Management of social and academic projects, leadership and decision-making, soci
 
 ### Certificate of Competency: ASU | Cuenca, Ecuador | Feb 2022 {engineering, it}
 Social responsibility, adaptability, leadership, crisis management, problem-solving.
+
+### Participant, IEEEXtreme 14.0 Programming Competition | Online | Oct 2020
+24-hour global programming competition run by IEEE with more than 7,300 participants, competing with team VivaLaPatria.
 
 ## Soft Skills and Interests
 
