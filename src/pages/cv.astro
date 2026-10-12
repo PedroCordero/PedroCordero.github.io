@@ -1,19 +1,30 @@
 ---
 // Data comes from content/cv/ via `python cv/build.py --json` (runs before dev and build).
-// The page shows the role marked `website: true` in content/cv/roles/, else the first one.
-import Base from '../layouts/Base.astro';
-import cv from '../data/cv.json';
+// Shows the role marked `website: true` in content/cv/roles/ (else the first) and offers every role's PDF.
+import { Download } from 'lucide-react';
+import Layout from '@/layouts/Layout.astro';
+import cv from '@/data/cv.json';
 
 const role = cv.roles.find((r) => r.website) ?? cv.roles[0];
+const fadeMask = 'mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);';
 ---
 
-<Base title="CV" description={role.headline}>
-  <h1>Curriculum Vitae</h1>
-  <p class="lead">{role.headline}</p>
-  <p class="actions">
-    {cv.roles.map((r) => <a class="button" href={r.pdf} download>{r.headline} · PDF</a>)}
-  </p>
-  <div class="cv">
+<Layout title="CV" description={role.headline}>
+  <header class="flex flex-col gap-4">
+    <h1 class="font-semibold text-3xl md:text-4xl tracking-tighter leading-tight">Curriculum Vitae</h1>
+    <p class="text-muted-foreground md:text-lg">{role.headline}</p>
+    <div class="flex flex-wrap gap-2">
+      {cv.roles.map((r) => (
+        <a href={r.pdf} download class="inline-flex items-center gap-2 h-9 rounded-md border border-input bg-background px-3 text-sm font-medium shadow-sm hover:bg-accent transition-colors">
+          <Download className="size-4" aria-hidden="true" />{r.headline}
+        </a>
+      ))}
+    </div>
+  </header>
+
+  <div class="my-6 flex w-full items-center"><div class="flex-1 h-px bg-border" style={fadeMask}></div></div>
+
+  <div class="cv-entries prose max-w-full text-pretty font-sans leading-relaxed text-muted-foreground dark:prose-invert">
     {role.sections.map((section) => (
       <section>
         <h2>{section.title}</h2>
@@ -21,4 +32,4 @@ const role = cv.roles.find((r) => r.website) ?? cv.roles[0];
       </section>
     ))}
   </div>
-</Base>
+</Layout>

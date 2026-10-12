@@ -32,6 +32,7 @@ const pages = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string().optional(),
+    tagline: z.string().optional(), // home.md only: the line under "Hi, I'm …"
     order: z.number().default(100),
   }),
 });

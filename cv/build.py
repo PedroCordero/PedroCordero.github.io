@@ -150,8 +150,8 @@ def md_inline(text):
     return re.sub(r"^<p>(.*)</p>$", r"\1", md(text.strip()), flags=re.S)
 
 
-def render_entry(head, rest):
-    """'### Title @ Org | Place | Dates' -> structured HTML entry."""
+def parse_head(head):
+    """'Title @ Org | Place | Dates' -> (title, org, place, dates)."""
     fields = [f.strip() for f in head.split("|")]
     title, place, dates = fields[0], "", ""
     if len(fields) == 2:
@@ -159,7 +159,13 @@ def render_entry(head, rest):
     elif len(fields) > 2:
         place, dates = ", ".join(fields[1:-1]), fields[-1]
     role, _, org = title.partition(" @ ")
-    sub = ", ".join(x for x in (org.strip(), place) if x)
+    return role.strip(), org.strip(), place, dates
+
+
+def render_entry(head, rest):
+    """'### Title @ Org | Place | Dates' -> structured HTML entry."""
+    role, org, place, dates = parse_head(head)
+    sub = ", ".join(x for x in (org, place) if x)
     out = ['<div class="entry"><div class="entry-head">',
            f'<span class="entry-title">{md_inline(role)}</span>',
            f'<span class="entry-date">{md_inline(dates)}</span></div>']
@@ -178,6 +184,33 @@ def render_section(text):
         head, _, rest = part.partition("\n")
         out.append(render_entry(head, rest))
     return "".join(out)
+
+
+def plain(html_text):
+    return " ".join(html.unescape(re.sub(r"<[^>]+>", " ", html_text)).split())
+
+
+def structure_section(text):
+    """A section as data for the website: its ### entries, or its bullet items."""
+    parts = re.split(r"(?m)^### ", text)
+    if len(parts) > 1:
+        entries = []
+        for part in parts[1:]:
+            head, _, rest = part.partition("\n")
+            title, org, place, dates = parse_head(head)
+            body = md(rest) if rest.strip() else ""
+            entries.append({"title": md_inline(title), "org": md_inline(org) if org else "",
+                            "place": place, "dates": dates, "html": body, "text": plain(body)})
+        return {"entries": entries}
+    items = []
+    for line in text.splitlines():
+        if not line.startswith("- "):
+            continue
+        m = re.match(r"\*\*(.+?)\*\*\s*(.*)$", line[2:].strip())   # "**Label:** rest"
+        label, rest = (m.group(1).rstrip(":. "), m.group(2).lstrip(": ")) if m else ("", line[2:].strip())
+        values = [v.strip() for v in re.split(r",\s*(?![^()]*\))", rest) if v.strip()]  # keeps "LLMs (a, b)" whole
+        items.append({"label": label, "html": md_inline(rest), "values": values})
+    return {"items": items}
 
 
 def render_body(summary, sections, order):
@@ -296,8 +329,13 @@ def export_json():
         roles.append({"id": name, "headline": headline, "website": bool(role.get("website")),
                       "pdf": f"/cv/{file_stem(person, name)}.pdf",
                       "sections": [{"title": t, "html": h} for t, h in render_body(summary, sections, order)]})
+    # The home page shows one role's version of master.md: the role with `website: true`, else the first.
+    site_role = next((r for r in roles if r["website"]), roles[0])["id"]
+    _, headline, summary, sections, _, _ = load_role(site_role)
     data = {"person": {k: person[k] for k in ("name", "email", "location", "links") if k in person},
-            "roles": roles}
+            "roles": roles,
+            "website": {"role": site_role, "headline": headline, "summary": md(summary),
+                        "sections": {name: structure_section(text) for name, text in sections.items()}}}
     JSON_OUT.parent.mkdir(parents=True, exist_ok=True)
     JSON_OUT.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"- website data: {JSON_OUT.relative_to(SITE).as_posix()}")

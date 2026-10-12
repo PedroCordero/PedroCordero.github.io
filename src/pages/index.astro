@@ -1,38 +1,206 @@
 ---
-import { getCollection, getEntry, render } from 'astro:content';
+// One-page home in the Starfolio layout (MIT). Text comes from content/pages/home.md,
+// experience/education/skills/publications/awards from content/cv/master.md (via cv.json),
+// and projects from content/projects/.
 import { Image } from 'astro:assets';
-import Base from '../layouts/Base.astro';
-import ProjectCard from '../components/ProjectCard.astro';
-import cv from '../data/cv.json';
+import { getCollection, getEntry, render } from 'astro:content';
+import { Award, ChevronRight } from 'lucide-react';
+import Layout from '@/layouts/Layout.astro';
+import OrgLogo from '@/components/OrgLogo.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
+import SectionPill from '@/components/SectionPill.astro';
+import { FlickeringGrid } from '@/components/react/flickering-grid';
+import cv from '@/data/cv.json';
 import photo from '../../content/cv/photo.jpg';
 
+type Entry = { title: string; org: string; place: string; dates: string; html: string; text: string };
+type Item = { label: string; html: string; values: string[] };
+const sections = cv.website.sections as Record<string, { entries?: Entry[]; items?: Item[] }>;
+const entries = (name: string) => sections[name]?.entries ?? [];
+const items = (name: string) => sections[name]?.items ?? [];
+
 const home = await getEntry('pages', 'home');
-const intro = home ? await render(home) : null;
+const certificates = await getEntry('pages', 'competitions');
+const about = home ? await render(home) : null;
 const projects = (await getCollection('projects', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
-const featured = projects.filter((p) => p.data.featured);
-const shown = (featured.length > 0 ? featured : projects).slice(0, 6);
-const role = cv.roles.find((r) => r.website) ?? cv.roles[0];
+  .sort((a, b) => Number(b.data.featured) - Number(a.data.featured) || b.data.date.valueOf() - a.data.date.valueOf());
+const firstName = cv.person.name.split(' ')[0];
+const linkedin = cv.person.links.find((link) => link.includes('linkedin.com'));
+const fade = (step: number) => `--fade-delay:${(step * 0.04).toFixed(2)}`;
+const work = entries('Experience');
+const education = entries('Education');
+const skills = items('Skills');
+const publications = items('Publications');
+const awards = entries('Honours and Awards');
 ---
 
-<Base>
-  <section class="hero">
-    <Image class="avatar" src={photo} alt={cv.person.name} width={320} />
-    <div>
-      <h1>{cv.person.name}</h1>
-      {role && <p class="lead">{role.headline}</p>}
-      {intro && <div class="prose"><intro.Content /></div>}
-      <p class="actions">
-        <a class="button primary" href="/projects/">See projects</a>
-        <a class="button" href="/cv/">Read CV</a>
-      </p>
-    </div>
-  </section>
-
-  {shown.length > 0 && (
-    <section>
-      <h2>{featured.length > 0 ? 'Featured projects' : 'Latest projects'}</h2>
-      <div class="grid">{shown.map((project) => <ProjectCard project={project} />)}</div>
+<Layout>
+  <main class="flex flex-col gap-14">
+    <section id="hero">
+      <div class="flex flex-col md:flex-row justify-between gap-2 gap-y-6">
+        <div class="flex flex-col gap-2 order-2 md:order-1">
+          <h1 data-fade style={fade(1)} class="text-3xl font-semibold tracking-tighter sm:text-4xl lg:text-5xl">Hi, I'm {firstName}</h1>
+          <p data-fade style={fade(2)} class="text-muted-foreground max-w-[600px] md:text-lg lg:text-xl text-pretty">{home?.data.tagline ?? cv.website.headline}</p>
+        </div>
+        <div data-fade style={fade(1)} class="order-1 md:order-2 shrink-0">
+          <Image src={photo} alt={cv.person.name} width={256} loading="eager" class="size-24 md:size-32 rounded-full border object-cover object-[center_20%] shadow-lg ring-4 ring-muted" />
+        </div>
+      </div>
     </section>
-  )}
-</Base>
+
+    {about && (
+      <section id="about" class="flex flex-col gap-y-4">
+        <h2 data-fade style={fade(3)} class="text-xl font-bold">About</h2>
+        <div data-fade style={fade(4)} class="prose max-w-full text-pretty font-sans leading-relaxed text-muted-foreground dark:prose-invert">
+          <about.Content />
+        </div>
+      </section>
+    )}
+
+    {work.length > 0 && (
+      <section id="work" class="flex flex-col gap-y-6">
+        <h2 data-fade style={fade(5)} class="text-xl font-bold">Work Experience</h2>
+        <div class="grid gap-6">
+          {work.map((job, i) => (
+            <details data-fade style={fade(6 + i)} class="group">
+              <summary class="flex items-center justify-between gap-x-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                <div class="flex items-center gap-x-3 flex-1 min-w-0">
+                  <OrgLogo name={job.org} />
+                  <div class="flex-1 min-w-0 flex flex-col gap-0.5">
+                    <div class="font-semibold leading-tight flex items-center gap-2">
+                      <span set:html={job.org} />
+                      <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 group-open:opacity-100 group-open:rotate-90 transition-all duration-200" aria-hidden="true" />
+                    </div>
+                    <div class="text-sm text-muted-foreground" set:html={job.title} />
+                  </div>
+                </div>
+                <span class="text-xs tabular-nums text-muted-foreground text-right flex-none">{job.dates}</span>
+              </summary>
+              <div class="mt-3 ml-11 md:ml-13 text-xs sm:text-sm leading-relaxed text-muted-foreground [&_ul]:list-disc [&_ul]:pl-4 [&_li]:mt-1.5" set:html={job.html} />
+            </details>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {education.length > 0 && (
+      <section id="education" class="flex flex-col gap-y-6">
+        <h2 data-fade style={fade(5)} class="text-xl font-bold">Education</h2>
+        <div class="flex flex-col gap-8">
+          {education.map((school, i) => (
+            <div data-fade style={fade(6 + i)} class="flex items-center gap-x-3 justify-between">
+              <div class="flex items-center gap-x-3 flex-1 min-w-0">
+                <OrgLogo name={school.org} />
+                <div class="flex-1 min-w-0 flex flex-col gap-0.5">
+                  <div class="font-semibold leading-tight" set:html={school.org} />
+                  <div class="text-sm text-muted-foreground"><span set:html={school.title} />{school.text && <span> · {school.text}</span>}</div>
+                </div>
+              </div>
+              <span class="text-xs tabular-nums text-muted-foreground text-right flex-none">{school.dates}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {skills.length > 0 && (
+      <section id="skills" class="flex flex-col gap-y-5">
+        <h2 data-fade style={fade(5)} class="text-xl font-bold">Skills</h2>
+        {skills.map((group, i) => (
+          <div data-fade style={fade(6 + i)} class="flex flex-col gap-2">
+            <h3 class="text-sm font-medium text-muted-foreground">{group.label}</h3>
+            <div class="flex flex-wrap gap-2">
+              {group.values.map((skill) => (
+                <span class="border bg-background border-border ring-2 ring-border/20 rounded-xl h-8 w-fit px-4 flex items-center text-sm font-medium">{skill}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </section>
+    )}
+
+    {projects.length > 0 && (
+      <section id="projects" class="flex flex-col gap-y-8">
+        <div data-fade style={fade(5)}>
+          <SectionPill label="Projects" heading="Research & projects" text="Published research and course projects in AI and robotics." />
+        </div>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 auto-rows-fr">
+          {projects.map((project, i) => (
+            <div data-fade style={fade(6 + (i % 2))} class="h-full">
+              <ProjectCard project={project} />
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {publications.length > 0 && (
+      <section id="publications" class="flex flex-col gap-y-6">
+        <h2 data-fade style={fade(5)} class="text-xl font-bold">Publications</h2>
+        <ul class="flex flex-col gap-6">
+          {publications.map((pub, i) => (
+            <li data-fade style={fade(6 + i)} class="flex flex-col gap-1">
+              <span class="text-xs font-medium uppercase tracking-wide text-muted-foreground">{pub.label}</span>
+              <div class="text-sm leading-relaxed text-muted-foreground [&_a]:text-foreground [&_a]:underline [&_a]:underline-offset-4 [&_a]:wrap-anywhere" set:html={pub.html} />
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {awards.length > 0 && (
+      <section id="awards" class="flex flex-col gap-y-8">
+        <div data-fade style={fade(5)}>
+          <SectionPill label="Awards" heading="Honours & awards" />
+        </div>
+        <ol class="flex flex-col gap-8 px-4">
+          {awards.map((award, i) => (
+            <li data-fade style={fade(6 + i)} class="relative flex items-start gap-6">
+              <div class="relative flex flex-col items-center self-stretch">
+                <div class="z-10 size-10 shrink-0 rounded-full border bg-card shadow ring-2 ring-border flex items-center justify-center text-muted-foreground">
+                  <Award className="size-5" aria-hidden="true" />
+                </div>
+                {i < awards.length - 1 && <div class="absolute top-10 -bottom-8 w-px bg-border" />}
+              </div>
+              <div class="flex flex-1 flex-col gap-2 min-w-0">
+                <time class="text-xs text-muted-foreground">{award.dates}</time>
+                <h3 class="font-semibold leading-snug" set:html={award.title} />
+                {award.place && <p class="text-sm text-muted-foreground">{award.place}</p>}
+                {award.text && <p class="text-sm text-muted-foreground leading-relaxed">{award.text}</p>}
+              </div>
+            </li>
+          ))}
+        </ol>
+        {certificates && (
+          <a href="/competitions/" class="self-center inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground border border-border rounded-lg px-3 py-1.5 transition-colors group">
+            See the certificates
+            <ChevronRight className="size-3.5 group-hover:translate-x-px transition-transform" aria-hidden="true" />
+          </a>
+        )}
+      </section>
+    )}
+
+    <section id="contact">
+      <div data-fade style={fade(5)} class="border rounded-xl p-10 relative">
+        <div class="absolute -top-4 border bg-primary z-10 rounded-xl px-4 py-1 left-1/2 -translate-x-1/2">
+          <span class="text-background text-sm font-medium">Contact</span>
+        </div>
+        <div class="absolute inset-x-0 top-0 h-1/2 rounded-xl overflow-hidden" aria-hidden="true">
+          <FlickeringGrid
+            client:visible
+            className="h-full w-full"
+            squareSize={2}
+            gridGap={2}
+            style={{ maskImage: 'linear-gradient(to bottom, black, transparent)', WebkitMaskImage: 'linear-gradient(to bottom, black, transparent)' }}
+          />
+        </div>
+        <div class="relative flex flex-col items-center gap-4 text-center">
+          <h2 class="text-3xl font-bold tracking-tighter sm:text-5xl">Get in Touch</h2>
+          <p class="mx-auto max-w-lg text-muted-foreground text-balance">
+            Email me at <a href={`mailto:${cv.person.email}`} class="text-foreground underline underline-offset-4">{cv.person.email}</a>{linkedin && <span> or connect on <a href={`https://${linkedin}`} class="text-foreground underline underline-offset-4">LinkedIn</a></span>}.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+</Layout>

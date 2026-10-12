@@ -10,12 +10,13 @@ content/
 ├── cv/
 │   ├── master.md        everything I've done: the single source for CV and website
 │   ├── roles/           one file per CV type (headline, summary, section order)
+│   ├── logos/           optional organisation logos for the home page (see below)
 │   └── photo.jpg
 ├── projects/
 │   ├── _template.md     copy this to start a project
 │   └── <name>/          one folder per project: index.md + its images
 └── pages/
-    ├── home.md          home page intro
+    ├── home.md          home page: tagline + About text
     └── *.md             any other file becomes a page in the menu
 
 cv/                      CV builder (Python)
@@ -54,6 +55,24 @@ scripts/check_private.py privacy check, runs on every commit and every publish
 Publishing only happens while the repository variable `PUBLISH` is `true`
 (`gh variable set PUBLISH --body true`; set it to `false` to pause). Builds and privacy
 checks run on every push regardless.
+
+## Home page
+
+The design is adapted from [Starfolio](https://github.com/webrating/starfolio) (MIT, notice in `LICENSES/starfolio.txt`). Each section is filled from Markdown:
+
+| Section | Comes from |
+|---|---|
+| "Hi, I'm …" + the line under it | first word of `name` in `master.md`, `tagline` in `content/pages/home.md` |
+| About | the text of `content/pages/home.md` |
+| Work Experience, Education, Skills, Publications, Honours & awards | the sections with those names in `master.md`, as filtered for the website role (`website: true` in `content/cv/roles/`, else the first role) |
+| Research & projects | `content/projects/`, featured first, then newest |
+| Contact | `email` and the LinkedIn link in `master.md` |
+
+**Logos:** experience and education rows show the organisation's initials. To show a logo instead, save it as
+`content/cv/logos/<name>.png` (or .jpg/.webp), where `<name>` is the organisation in lowercase with dashes,
+e.g. `european-knowledge-center.png`, `eotvos-lorand-university.png`.
+
+**Colors and fonts:** the `oklch(...)` values in `src/styles/global.css` (`:root` = light, `.dark` = dark).
 
 ## CVs
 

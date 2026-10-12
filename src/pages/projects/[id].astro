@@ -1,29 +1,78 @@
 ---
-import { getCollection, render } from 'astro:content';
+// Project page in the style of Starfolio's blog post (MIT).
+import { getCollection, render, type CollectionEntry } from 'astro:content';
 import { Image, getImage } from 'astro:assets';
-import Base from '../../layouts/Base.astro';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Layout from '@/layouts/Layout.astro';
 
 export async function getStaticPaths() {
-  const projects = await getCollection('projects', ({ data }) => !data.draft);
-  return projects.map((project) => ({ params: { id: project.id }, props: { project } }));
+  const projects = (await getCollection('projects', ({ data }) => !data.draft))
+    .sort((a, b) => Number(b.data.featured) - Number(a.data.featured) || b.data.date.valueOf() - a.data.date.valueOf());
+  return projects.map((project, i) => ({
+    params: { id: project.id },
+    props: { project, previous: projects[i - 1] ?? null, next: projects[i + 1] ?? null },
+  }));
 }
 
-const { project } = Astro.props;
+interface Props {
+  project: CollectionEntry<'projects'>;
+  previous: CollectionEntry<'projects'> | null;
+  next: CollectionEntry<'projects'> | null;
+}
+
+const { project, previous, next } = Astro.props;
 const { title, summary, date, cover, video, tags, links } = project.data;
 const { Content } = await render(project);
 const poster = video && cover ? (await getImage({ src: cover, width: 1200 })).src : undefined;
+const fadeMask = 'mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);';
 ---
 
-<Base title={title} description={summary}>
-  <article class="project">
-    <a class="back" href="/projects/">← All projects</a>
-    <h1>{title}</h1>
-    <p class="meta"><time datetime={date.toISOString()}>{date.getFullYear()}</time></p>
-    {tags.length > 0 && <ul class="tags">{tags.map((tag) => <li>{tag}</li>)}</ul>}
-    {links.length > 0 && <p class="actions">{links.map((link) => <a class="button" href={link.url}>{link.label}</a>)}</p>}
+<Layout title={title} description={summary}>
+  <article>
+    <a href="/projects/" class="text-sm text-muted-foreground hover:text-foreground transition-colors border border-border rounded-lg px-2 py-1 inline-flex items-center gap-1 mb-6 group">
+      <ChevronLeft className="size-3 group-hover:-translate-x-px transition-transform" aria-hidden="true" />
+      All projects
+    </a>
+    <header class="flex flex-col gap-4">
+      <h1 class="font-semibold text-3xl md:text-4xl tracking-tighter leading-tight text-balance">{title}</h1>
+      <p class="text-sm text-muted-foreground"><time datetime={date.toISOString()}>{date.getFullYear()}</time></p>
+      {tags.length > 0 && (
+        <div class="flex flex-wrap gap-1">
+          {tags.map((tag) => <span class="inline-flex items-center h-6 rounded-md border border-border px-2 text-[11px] font-medium">{tag}</span>)}
+        </div>
+      )}
+      {links.length > 0 && (
+        <div class="flex flex-wrap gap-2">
+          {links.map((link) => (
+            <a href={link.url} target="_blank" rel="noopener noreferrer" class="inline-flex items-center rounded-md bg-primary px-3 py-1 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors">{link.label}</a>
+          ))}
+        </div>
+      )}
+    </header>
+
+    <div class="my-6 flex w-full items-center"><div class="flex-1 h-px bg-border" style={fadeMask}></div></div>
+
     {video
-      ? <video class="cover" src={video} poster={poster} autoplay loop muted playsinline></video>
-      : cover && <Image class="cover" src={cover} alt="" width={1200} />}
-    <div class="prose"><Content /></div>
+      ? <video class="w-full rounded-xl border mb-8" src={video} poster={poster} autoplay loop muted playsinline></video>
+      : cover && <Image class="w-full rounded-xl border mb-8" src={cover} alt="" width={1200} />}
+
+    <div class="prose max-w-full text-pretty font-sans leading-relaxed text-muted-foreground dark:prose-invert">
+      <Content />
+    </div>
+
+    <nav class="mt-12 pt-8 flex flex-col sm:flex-row justify-between gap-4" aria-label="More projects">
+      {previous ? (
+        <a href={`/projects/${previous.id}/`} class="group flex-1 flex flex-col gap-1 p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors">
+          <span class="flex items-center gap-1 text-xs text-muted-foreground"><ChevronLeft className="size-3" aria-hidden="true" />Previous</span>
+          <span class="text-sm font-medium">{previous.data.title}</span>
+        </a>
+      ) : <div class="hidden sm:block flex-1" />}
+      {next ? (
+        <a href={`/projects/${next.id}/`} class="group flex-1 flex flex-col gap-1 p-4 rounded-lg border border-border hover:bg-accent/50 transition-colors text-right">
+          <span class="flex items-center justify-end gap-1 text-xs text-muted-foreground">Next<ChevronRight className="size-3" aria-hidden="true" /></span>
+          <span class="text-sm font-medium">{next.data.title}</span>
+        </a>
+      ) : <div class="hidden sm:block flex-1" />}
+    </nav>
   </article>
-</Base>
+</Layout>

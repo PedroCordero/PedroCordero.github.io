@@ -1,0 +1,108 @@
+---
+// Page shell adapted from Starfolio (MIT, see LICENSES/starfolio.txt).
+import { getCollection } from 'astro:content';
+import { getImage } from 'astro:assets';
+import Navbar, { type NavItem } from '@/components/react/navbar';
+import { FlickeringGrid } from '@/components/react/flickering-grid';
+import cv from '@/data/cv.json';
+import photo from '../../content/cv/photo.jpg';
+import '@/styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title, description = cv.website.headline } = Astro.props;
+const name = cv.person.name;
+const pageTitle = title ? `${title} | ${name}` : name;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL((await getImage({ src: photo, width: 600, format: 'jpg' })).src, Astro.site);
+
+const pages = (await getCollection('pages', ({ id }) => id !== 'home')).sort((a, b) => a.data.order - b.data.order);
+const nav: NavItem[] = [
+  { href: '/', label: 'Home', icon: 'home' },
+  { href: '/projects/', label: 'Projects', icon: 'projects' },
+  { href: '/cv/', label: 'CV', icon: 'cv' },
+  // Extra pages only on wider screens: on phones the dock would not fit.
+  ...pages.map((p) => ({ href: `/${p.id}/`, label: p.data.title, icon: 'page' as const, desktopOnly: true })),
+];
+const socials: NavItem[] = [
+  ...cv.person.links.flatMap((link): NavItem[] =>
+    link.includes('github.com') ? [{ href: `https://${link}`, label: 'GitHub', icon: 'github' }]
+    : link.includes('linkedin.com') ? [{ href: `https://${link}`, label: 'LinkedIn', icon: 'linkedin' }]
+    : []),
+  { href: `mailto:${cv.person.email}`, label: 'Email', icon: 'email' },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      // Before first paint: enable animations and apply the saved (or system) color theme.
+      (function () {
+        var root = document.documentElement;
+        root.classList.add('js');
+        try {
+          var theme = localStorage.getItem('theme');
+          if (theme === 'dark' || (!theme && matchMedia('(prefers-color-scheme: dark)').matches)) root.classList.add('dark');
+        } catch (_) {}
+      })();
+    </script>
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={name} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary" />
+  </head>
+  <body class="min-h-screen bg-background font-sans antialiased relative">
+    <div class="absolute inset-x-0 top-0 h-25 overflow-hidden z-0" aria-hidden="true">
+      <FlickeringGrid
+        client:idle
+        className="h-full w-full"
+        squareSize={2}
+        gridGap={2}
+        style={{ maskImage: 'linear-gradient(to bottom, black, transparent)', WebkitMaskImage: 'linear-gradient(to bottom, black, transparent)' }}
+      />
+    </div>
+
+    <div class="relative z-10 max-w-2xl mx-auto py-12 pb-28 sm:py-24 px-6">
+      <slot />
+    </div>
+
+    <Navbar client:load pages={nav} socials={socials} />
+
+    <script is:inline>
+      // Blur-fade: reveal [data-fade] elements as they scroll into view.
+      // Safety nets: what is already on screen shows at once, and everything shows after 3 s,
+      // so content can never stay hidden if the observer doesn't fire.
+      (function () {
+        var els = Array.prototype.slice.call(document.querySelectorAll('[data-fade]'));
+        var show = function (el) { el.classList.add('in-view'); };
+        setTimeout(function () { els.forEach(show); }, 3000);
+        if (!('IntersectionObserver' in window)) return els.forEach(show);
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              show(entry.target);
+              io.unobserve(entry.target);
+            }
+          });
+        }, { rootMargin: '0px 0px -50px 0px' });
+        els.forEach(function (el) {
+          if (el.getBoundingClientRect().top < window.innerHeight) show(el);
+          else io.observe(el);
+        });
+      })();
+    </script>
+  </body>
+</html>
